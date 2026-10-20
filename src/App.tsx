@@ -21,27 +21,54 @@ const DEFAULT_TASKS: Tasks[] = [
 
 function App() {
   const editInputRef = useRef<HTMLInputElement>(null);
+  const addTaskInputRef = useRef<HTMLInputElement>(null);
+  const searchTaskInputRef = useRef<HTMLInputElement>(null);
+
   const [tasks, setTasks] = useState<Tasks[]>(() => {
-    const storedTasks = localStorage.getItem("task");
-    return storedTasks ? JSON.parse(storedTasks) : DEFAULT_TASKS;
+    try {
+      const storedTasks = localStorage.getItem("task");
+      return storedTasks ? JSON.parse(storedTasks) : DEFAULT_TASKS;
+    } catch {
+      return [];
+    }
   });
   const [editingId, setEditingId] = useState<string | null>();
+
+  const addTask = () => {
+    if (!addTaskInputRef.current || !addTaskInputRef.current.value) return;
+    const newTask: Tasks = {
+      id: crypto.randomUUID(),
+      name: addTaskInputRef.current.value,
+      createdDate: Date.now(),
+      endDate: Date.now(),
+    };
+
+    setTasks((prev) => [...prev, newTask]);
+    addTaskInputRef.current.value = "";
+  };
 
   const editTask = (id: string) => {
     setEditingId(id);
   };
 
+  const deleteTask = (id: string) => {
+    setTasks((prev) => {
+      return prev.filter((t) => t.id !== id);
+    });
+  };
+
   const cancelEditing = () => {
     setEditingId(null);
-    editInputRef.current = null;
+    editInputRef.current.value = "";
   };
 
   const saveEditing = (id: string) => {
+    if (!editInputRef.current || !editInputRef.current.value) return;
     const taskName = editInputRef.current.value;
-    setTasks(() => {
-      return tasks.map((t) => (t.id === id ? { ...t, name: taskName } : t));
+    setTasks((prev) => {
+      return prev.map((t) => (t.id === id ? { ...t, name: taskName } : t));
     });
-    setEditingId(null)
+    setEditingId(null);
   };
 
   return (
@@ -55,7 +82,15 @@ function App() {
         <div>
           <h1>Get started</h1>
           <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
+            <input ref={searchTaskInputRef} />
+            <button type="button" className="counter" onClick={() => addTask()}>
+              Search Task
+            </button>
+
+            <input ref={addTaskInputRef} />
+            <button type="button" className="counter" onClick={() => addTask()}>
+              Add Task
+            </button>
           </p>
         </div>
         <div>
@@ -63,7 +98,7 @@ function App() {
             return (
               <div>
                 {editingId === task.id ? (
-                  <div>
+                  <div key={task.id}>
                     <input ref={editInputRef} />
                     <button
                       type="button"
@@ -81,16 +116,24 @@ function App() {
                     </button>
                   </div>
                 ) : (
-                  task.name
+                  <div key={task.id}>
+                    {task.name}
+                    <button
+                      type="button"
+                      className="counter"
+                      onClick={() => editTask(task.id)}
+                    >
+                      Edit Task
+                    </button>
+                    <button
+                      type="button"
+                      className="counter"
+                      onClick={() => deleteTask(task.id)}
+                    >
+                      Delete Task
+                    </button>
+                  </div>
                 )}
-
-                <button
-                  type="button"
-                  className="counter"
-                  onClick={() => editTask(task.id)}
-                >
-                  Edit Task
-                </button>
               </div>
             );
           })}
