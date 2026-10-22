@@ -1,16 +1,16 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import heroImg from "./assets/hero.png";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "./assets/vite.svg";
 import "./App.css";
 
-interface Tasks {
+interface Task {
   id: string;
   name: string;
   createdDate: number;
   endDate: number;
 }
-const DEFAULT_TASKS: Tasks[] = [
+const DEFAULT_TASKS: Task[] = [
   {
     id: "123124",
     name: "cleaning",
@@ -24,21 +24,38 @@ function App() {
   const addTaskInputRef = useRef<HTMLInputElement>(null);
   const searchTaskInputRef = useRef<HTMLInputElement>(null);
 
-  const [tasks, setTasks] = useState<Tasks[]>(() => {
+  const [tasks, setTasks] = useState<Task[]>(() => {
     try {
-      const storedTasks = localStorage.getItem("task");
-      return storedTasks ? JSON.parse(storedTasks) : DEFAULT_TASKS;
+      const storedTasks = localStorage.getItem("taskStore");
+      const parsed = storedTasks ? JSON.parse(storedTasks) : DEFAULT_TASKS;
+      return Array.isArray(parsed) ? parsed : DEFAULT_TASKS;
     } catch {
-      return [];
+      return DEFAULT_TASKS;
     }
   });
-  const [editingId, setEditingId] = useState<string | null>();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredTasks = tasks.filter((t) =>
+    t.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
+  const searchTask = () => {
+    if (!searchTaskInputRef.current) return;
+    setSearchQuery(searchTaskInputRef.current.value.trim());
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+    if (searchTaskInputRef.current) searchTaskInputRef.current.value = "";
+  };
 
   const addTask = () => {
-    if (!addTaskInputRef.current || !addTaskInputRef.current.value) return;
-    const newTask: Tasks = {
+    const name = addTaskInputRef.current?.value.trim();
+    if (!addTaskInputRef.current || !name) return;
+    const newTask: Task = {
       id: crypto.randomUUID(),
-      name: addTaskInputRef.current.value,
+      name,
       createdDate: Date.now(),
       endDate: Date.now(),
     };
@@ -59,17 +76,20 @@ function App() {
 
   const cancelEditing = () => {
     setEditingId(null);
-    editInputRef.current.value = "";
   };
 
   const saveEditing = (id: string) => {
-    if (!editInputRef.current || !editInputRef.current.value) return;
-    const taskName = editInputRef.current.value;
+    const taskName = editInputRef.current?.value.trim();
+    if (!taskName) return;
     setTasks((prev) => {
       return prev.map((t) => (t.id === id ? { ...t, name: taskName } : t));
     });
     setEditingId(null);
   };
+
+  useEffect(() => {
+    localStorage.setItem("taskStore", JSON.stringify(tasks));
+  }, [tasks]);
 
   return (
     <>
@@ -83,8 +103,19 @@ function App() {
           <h1>Get started</h1>
           <p>
             <input ref={searchTaskInputRef} />
-            <button type="button" className="counter" onClick={() => addTask()}>
+            <button
+              type="button"
+              className="counter"
+              onClick={() => searchTask()}
+            >
               Search Task
+            </button>
+            <button
+              type="button"
+              className="counter"
+              onClick={() => clearSearch()}
+            >
+              Clear Search
             </button>
 
             <input ref={addTaskInputRef} />
@@ -94,12 +125,12 @@ function App() {
           </p>
         </div>
         <div>
-          {tasks.map((task) => {
+          {filteredTasks.map((task) => {
             return (
-              <div>
+              <div key={task.id}>
                 {editingId === task.id ? (
-                  <div key={task.id}>
-                    <input ref={editInputRef} />
+                  <>
+                    <input ref={editInputRef} defaultValue={task.name} />
                     <button
                       type="button"
                       className="counter"
@@ -114,9 +145,9 @@ function App() {
                     >
                       Save Edit
                     </button>
-                  </div>
+                  </>
                 ) : (
-                  <div key={task.id}>
+                  <div>
                     {task.name}
                     <button
                       type="button"
