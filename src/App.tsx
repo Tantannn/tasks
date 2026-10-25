@@ -3,21 +3,8 @@ import heroImg from "./assets/hero.png";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "./assets/vite.svg";
 import "./App.css";
-
-interface Task {
-  id: string;
-  name: string;
-  createdDate: number;
-  endDate: number;
-}
-const DEFAULT_TASKS: Task[] = [
-  {
-    id: "123124",
-    name: "cleaning",
-    createdDate: Date.now(),
-    endDate: Date.now(),
-  },
-];
+import type { Task } from "./type";
+import { DEFAULT_TASKS } from "./const";
 
 function App() {
   const editInputRef = useRef<HTMLInputElement>(null);
@@ -101,28 +88,29 @@ function App() {
         </div>
         <div>
           <h1>Get started</h1>
-          <p>
-            <input ref={searchTaskInputRef} />
-            <button
-              type="button"
-              className="counter"
-              onClick={() => searchTask()}
-            >
-              Search Task
-            </button>
-            <button
-              type="button"
-              className="counter"
-              onClick={() => clearSearch()}
-            >
-              Clear Search
-            </button>
-
+          <div>
+            <div>
+              <input ref={searchTaskInputRef} />
+              <button
+                type="button"
+                className="counter"
+                onClick={() => searchTask()}
+              >
+                Search Task
+              </button>
+              <button
+                type="button"
+                className="counter"
+                onClick={() => clearSearch()}
+              >
+                Clear Search
+              </button>
+            </div>
             <input ref={addTaskInputRef} />
             <button type="button" className="counter" onClick={() => addTask()}>
               Add Task
             </button>
-          </p>
+          </div>
         </div>
         <div>
           {filteredTasks.map((task) => {
