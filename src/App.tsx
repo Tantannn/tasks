@@ -5,11 +5,13 @@ import viteLogo from "./assets/vite.svg";
 import "./App.css";
 import type { Task } from "./type";
 import { DEFAULT_TASKS } from "./const";
+import useUndo from "./useUndo";
 
 function App() {
   const editInputRef = useRef<HTMLInputElement>(null);
   const addTaskInputRef = useRef<HTMLInputElement>(null);
   const searchTaskInputRef = useRef<HTMLInputElement>(null);
+
 
   const [tasks, setTasks] = useState<Task[]>(() => {
     try {
@@ -20,6 +22,8 @@ function App() {
       return DEFAULT_TASKS;
     }
   });
+  const { set, undo, redo } = useUndo(tasks);
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -49,6 +53,7 @@ function App() {
 
     setTasks((prev) => [...prev, newTask]);
     addTaskInputRef.current.value = "";
+    set(newTask);
   };
 
   const editTask = (id: string) => {
@@ -68,8 +73,13 @@ function App() {
   const saveEditing = (id: string) => {
     const taskName = editInputRef.current?.value.trim();
     if (!taskName) return;
+    const updateTask = (t: Task) => {
+      const newTask = { ...t, name: taskName };
+      set(newTask);
+      return newTask;
+    };
     setTasks((prev) => {
-      return prev.map((t) => (t.id === id ? { ...t, name: taskName } : t));
+      return prev.map((t) => (t.id === id ? updateTask(t) : t));
     });
     setEditingId(null);
   };
@@ -85,6 +95,12 @@ function App() {
           <img src={heroImg} className="base" width="170" height="179" alt="" />
           <img src={reactLogo} className="framework" alt="React logo" />
           <img src={viteLogo} className="vite" alt="Vite logo" />
+          <button type="button" className="counter" onClick={() => undo()}>
+            Undo
+          </button>
+          <button type="button" className="counter" onClick={() => redo()}>
+            Redo
+          </button>
         </div>
         <div>
           <h1>Get started</h1>
@@ -156,32 +172,6 @@ function App() {
               </div>
             );
           })}
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
         </div>
       </section>
 
