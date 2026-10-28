@@ -12,7 +12,6 @@ function App() {
   const addTaskInputRef = useRef<HTMLInputElement>(null);
   const searchTaskInputRef = useRef<HTMLInputElement>(null);
 
-
   const [tasks, setTasks] = useState<Task[]>(() => {
     try {
       const storedTasks = localStorage.getItem("taskStore");
@@ -51,9 +50,12 @@ function App() {
       endDate: Date.now(),
     };
 
-    setTasks((prev) => [...prev, newTask]);
+    setTasks((prev) => {
+      const updatedTaskList = [...prev, newTask]
+      set(updatedTaskList);
+      return updatedTaskList
+    });
     addTaskInputRef.current.value = "";
-    set(newTask);
   };
 
   const editTask = (id: string) => {
@@ -75,11 +77,14 @@ function App() {
     if (!taskName) return;
     const updateTask = (t: Task) => {
       const newTask = { ...t, name: taskName };
-      set(newTask);
       return newTask;
     };
     setTasks((prev) => {
-      return prev.map((t) => (t.id === id ? updateTask(t) : t));
+      const updatedTaskList = prev.map((t) =>
+        t.id === id ? updateTask(t) : t,
+      );
+      set(updatedTaskList);
+      return updatedTaskList;
     });
     setEditingId(null);
   };
