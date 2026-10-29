@@ -12,7 +12,7 @@ function App() {
   const addTaskInputRef = useRef<HTMLInputElement>(null);
   const searchTaskInputRef = useRef<HTMLInputElement>(null);
 
-  const [tasks, setTasks] = useState<Task[]>(() => {
+  const { tasks, setTasks, undo, redo, canUndo, canRedo } = useUndo(() => {
     try {
       const storedTasks = localStorage.getItem("taskStore");
       const parsed = storedTasks ? JSON.parse(storedTasks) : DEFAULT_TASKS;
@@ -21,7 +21,6 @@ function App() {
       return DEFAULT_TASKS;
     }
   });
-  const { set, undo, redo } = useUndo(tasks);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -50,11 +49,7 @@ function App() {
       endDate: Date.now(),
     };
 
-    setTasks((prev) => {
-      const updatedTaskList = [...prev, newTask]
-      set(updatedTaskList);
-      return updatedTaskList
-    });
+    setTasks((prev) => [...prev, newTask]);
     addTaskInputRef.current.value = "";
   };
 
@@ -79,13 +74,7 @@ function App() {
       const newTask = { ...t, name: taskName };
       return newTask;
     };
-    setTasks((prev) => {
-      const updatedTaskList = prev.map((t) =>
-        t.id === id ? updateTask(t) : t,
-      );
-      set(updatedTaskList);
-      return updatedTaskList;
-    });
+    setTasks((prev) => prev.map((t) => (t.id === id ? updateTask(t) : t)));
     setEditingId(null);
   };
 
@@ -100,10 +89,20 @@ function App() {
           <img src={heroImg} className="base" width="170" height="179" alt="" />
           <img src={reactLogo} className="framework" alt="React logo" />
           <img src={viteLogo} className="vite" alt="Vite logo" />
-          <button type="button" className="counter" onClick={() => undo()}>
+          <button
+            type="button"
+            className="counter"
+            disabled={!canUndo}
+            onClick={() => undo()}
+          >
             Undo
           </button>
-          <button type="button" className="counter" onClick={() => redo()}>
+          <button
+            type="button"
+            className="counter"
+            disabled={!canRedo}
+            onClick={() => redo()}
+          >
             Redo
           </button>
         </div>
