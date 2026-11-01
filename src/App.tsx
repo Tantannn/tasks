@@ -71,7 +71,7 @@ function App() {
     const taskName = editInputRef.current?.value.trim();
     if (!taskName) return;
     const updateTask = (t: Task) => {
-      const newTask = { ...t, name: taskName };
+      const newTask = t.name === taskName ? t : { ...t, name: taskName };
       return newTask;
     };
     setTasks((prev) => prev.map((t) => (t.id === id ? updateTask(t) : t)));

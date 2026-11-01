@@ -1,11 +1,7 @@
 import { useState } from "react";
-import type { Task } from "./type";
-
-type History = {
-  past: Task[][];
-  present: Task[];
-  future: Task[][];
-};
+import type { History, Task } from "./type";
+import { MAX_HISTORY } from "./const";
+import { same } from "./ultis";
 
 type Updater = Task[] | ((prev: Task[]) => Task[]);
 
@@ -21,8 +17,8 @@ const useUndo = (initial: Task[] | (() => Task[])) => {
   const setTasks = (updater: Updater) => {
     setHistory((h) => {
       const next = typeof updater === "function" ? updater(h.present) : updater;
-      if (next === h.present) return h;
-      return { past: [...h.past, h.present], present: next, future: [] };
+      if (same(next, h.present)) return h;
+      return { past: [...h.past, h.present].slice(-MAX_HISTORY), present: next, future: [] };
     });
   };
 
@@ -32,7 +28,7 @@ const useUndo = (initial: Task[] | (() => Task[])) => {
       return {
         past: h.past.slice(0, -1),
         present: h.past[h.past.length - 1],
-        future: [...h.future, h.present],
+        future: [...h.future, h.present].slice(-MAX_HISTORY),
       };
     });
   };
@@ -41,7 +37,7 @@ const useUndo = (initial: Task[] | (() => Task[])) => {
     setHistory((h) => {
       if (!h.future.length) return h;
       return {
-        past: [...h.past, h.present],
+        past: [...h.past, h.present].slice(-MAX_HISTORY),
         present: h.future[h.future.length - 1],
         future: h.future.slice(0, -1),
       };

@@ -8,3 +8,5 @@ export const DEFAULT_TASKS: Task[] = [
     endDate: Date.now(),
   },
 ];
+
+export const MAX_HISTORY = 100;

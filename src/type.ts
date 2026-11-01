@@ -4,3 +4,9 @@ export interface Task {
   createdDate: number;
   endDate: number;
 }
+
+export type History = {
+  past: Task[][];
+  present: Task[];
+  future: Task[][];
+};
