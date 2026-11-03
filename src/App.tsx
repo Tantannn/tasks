@@ -7,6 +7,20 @@ import type { Task } from "./type";
 import { DEFAULT_TASKS } from "./const";
 import useUndo from "./useUndo";
 
+const fakeSearch = (query: string, signal: AbortSignal) => {
+  return new Promise((resolve, reject) => {
+    const delay = 300 + Math.random() * 700;
+    const t = setTimeout(() => {
+      resolve([`hello, 1 ${query}`])
+    }, delay)
+    signal.addEventListener('abort', () => {
+      clearTimeout(t)
+      reject(new DOMException("Aborted", "AbortError"))
+    })
+    return;
+  });
+};
+
 function App() {
   const editInputRef = useRef<HTMLInputElement>(null);
   const addTaskInputRef = useRef<HTMLInputElement>(null);
@@ -25,9 +39,17 @@ function App() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState();
+
   const filteredTasks = tasks.filter((t) =>
     t.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
+  
+  const search = () => {
+    if (!searchTaskInputRef.current) return;
+    setSearchQuery(searchTaskInputRef.current.value.trim());
+  };
 
   const searchTask = () => {
     if (!searchTaskInputRef.current) return;
@@ -77,6 +99,24 @@ function App() {
     setTasks((prev) => prev.map((t) => (t.id === id ? updateTask(t) : t)));
     setEditingId(null);
   };
+
+  useEffect(() => {
+    if (!query) return;
+
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const data = await fakeSearch(query, controller.signal);
+        setResults(data);
+      } catch (e) {
+        if (e.name !== "AbortError") throw e; // ignore cancels
+      }
+    }, 400);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [query]);
 
   useEffect(() => {
     localStorage.setItem("taskStore", JSON.stringify(tasks));
