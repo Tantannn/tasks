@@ -7,11 +7,13 @@ import type { Task } from "./type";
 import { DEFAULT_TASKS } from "./const";
 import useUndo from "./useUndo";
 import useDebounceSearch from "./useDebounceSearch";
+import useCountdown from "./useCountdown";
 
 function App() {
   const editInputRef = useRef<HTMLInputElement>(null);
   const addTaskInputRef = useRef<HTMLInputElement>(null);
 
+  const { startCountdown, stopCountdown, coundownInputRef } = useCountdown();
   const { tasks, setTasks, undo, redo, canUndo, canRedo } = useUndo(() => {
     try {
       const storedTasks = localStorage.getItem("taskStore");
@@ -103,9 +105,28 @@ function App() {
         </div>
         <div>
           <h1>Get started</h1>
+          <input ref={coundownInputRef} />
+          <button
+            type="button"
+            className="counter"
+            onClick={() => startCountdown()}
+          >
+            Start Countdown
+          </button>
+          
+          <button
+            type="button"
+            className="counter"
+            onClick={() => stopCountdown()}
+          >
+            Stop Countdown
+          </button>
           <div>
             <div>
-              <input onChange={(e) => setSearchQuery(e.currentTarget.value)} value={searchQuery} />
+              <input
+                onChange={(e) => setSearchQuery(e.currentTarget.value)}
+                value={searchQuery}
+              />
               <button
                 type="button"
                 className="counter"
