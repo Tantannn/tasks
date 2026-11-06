@@ -13,7 +13,8 @@ function App() {
   const editInputRef = useRef<HTMLInputElement>(null);
   const addTaskInputRef = useRef<HTMLInputElement>(null);
 
-  const { startCountdown, stopCountdown, coundownInputRef } = useCountdown();
+  const { startCountdown, stopCountdown, countdownInputRef, timeLeft } =
+    useCountdown();
   const { tasks, setTasks, undo, redo, canUndo, canRedo } = useUndo(() => {
     try {
       const storedTasks = localStorage.getItem("taskStore");
@@ -86,41 +87,43 @@ function App() {
           <img src={heroImg} className="base" width="170" height="179" alt="" />
           <img src={reactLogo} className="framework" alt="React logo" />
           <img src={viteLogo} className="vite" alt="Vite logo" />
-          <button
-            type="button"
-            className="counter"
-            disabled={!canUndo}
-            onClick={() => undo()}
-          >
-            Undo
-          </button>
-          <button
-            type="button"
-            className="counter"
-            disabled={!canRedo}
-            onClick={() => redo()}
-          >
-            Redo
-          </button>
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <input ref={coundownInputRef} />
-          <button
-            type="button"
-            className="counter"
-            onClick={() => startCountdown()}
-          >
-            Start Countdown
-          </button>
-          
-          <button
-            type="button"
-            className="counter"
-            onClick={() => stopCountdown()}
-          >
-            Stop Countdown
-          </button>
+          <div>
+            <h1>Get started</h1>
+            <input type="number" min="0" step="1" ref={countdownInputRef} />
+            <button
+              type="button"
+              className="counter"
+              onClick={() => startCountdown()}
+            >
+              Start Countdown
+            </button>
+
+            <button
+              type="button"
+              className="counter"
+              onClick={() => stopCountdown()}
+            >
+              Stop Countdown
+            </button>
+            <div>{timeLeft}</div>
+            <button
+              type="button"
+              className="counter"
+              disabled={!canUndo}
+              onClick={() => undo()}
+            >
+              Undo
+            </button>
+            <button
+              type="button"
+              className="counter"
+              disabled={!canRedo}
+              onClick={() => redo()}
+            >
+              Redo
+            </button>
+          </div>
+
           <div>
             <div>
               <input
