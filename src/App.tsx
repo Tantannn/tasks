@@ -13,8 +13,14 @@ function App() {
   const editInputRef = useRef<HTMLInputElement>(null);
   const addTaskInputRef = useRef<HTMLInputElement>(null);
 
-  const { startCountdown, stopCountdown, countdownInputRef, timeLeft } =
-    useCountdown();
+  const {
+    startCountdown,
+    stopCountdown,
+    countdownInputRef,
+    timeLeft,
+    isRunning,
+    continnueCountdown,
+  } = useCountdown();
   const { tasks, setTasks, undo, redo, canUndo, canRedo } = useUndo(() => {
     try {
       const storedTasks = localStorage.getItem("taskStore");
@@ -97,14 +103,23 @@ function App() {
             >
               Start Countdown
             </button>
-
-            <button
-              type="button"
-              className="counter"
-              onClick={() => stopCountdown()}
-            >
-              Stop Countdown
-            </button>
+            {isRunning || timeLeft > 0 ? (
+              <button
+                type="button"
+                className="counter"
+                onClick={() => stopCountdown()}
+              >
+                Stop Countdown
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="counter"
+                onClick={() => continnueCountdown()}
+              >
+                Continue Countdown
+              </button>
+            )}
             <div>{timeLeft}</div>
             <button
               type="button"
